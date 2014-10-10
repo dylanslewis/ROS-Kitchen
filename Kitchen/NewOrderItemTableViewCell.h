@@ -7,8 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Parse/Parse.h>
 
 @interface NewOrderItemTableViewCell : UITableViewCell
+
 @property (weak, nonatomic) IBOutlet UILabel *orderItemNameLabel;
+
+@property (weak, nonatomic) PFObject *orderItemObject;
 
 @end

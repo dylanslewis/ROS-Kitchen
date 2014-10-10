@@ -9,6 +9,8 @@
 #import "OrderItemManagerViewController.h"
 #import <Parse/Parse.h>
 #import "NewOrderItemTableViewCell.h"
+#import "UIImage+ImageEffects.h"
+#import "AcceptItemViewController.h"
 
 @interface OrderItemManagerViewController ()
 
@@ -42,6 +44,48 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
+
+#pragma mark - Button handling
+
+- (IBAction)didTouchAcceptNewOrderButton:(id)sender {
+    NewOrderItemTableViewCell *touchedCell = (NewOrderItemTableViewCell *)[[sender superview] superview];
+    
+    PFObject *orderItem = [touchedCell orderItemObject];
+    
+    [self performSegueWithIdentifier:@"acceptItemSegue" sender:orderItem];
+}
+
+- (IBAction)didTouchRejectNewOrderButton:(id)sender {
+}
+
+
+
+#pragma mark - Translucency effects
+
+// All translucency code adapted from http://stackoverflow.com/questions/19177348/ios-7-translucent-modal-view-controller
+
+-(UIImage *)convertViewToImage:(UIView *)view {
+    UIGraphicsBeginImageContext(view.bounds.size);
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
+- (UIImage *)makeTranslucent:(UIImage *)image {
+    image = [self convertViewToImage:self.view];
+    image = [image applyBlurWithRadius:20
+                                             tintColor:[UIColor colorWithWhite:1.0 alpha:0.2]
+                                 saturationDeltaFactor:1.3
+                                             maskImage:nil];
+    
+    return image;
+}
+
+
+
+#pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 /*
@@ -93,20 +137,11 @@
     PFObject *orderItem = [_orderItemsArray objectAtIndex:[indexPath row]];
     
     cell.orderItemNameLabel.text = orderItem[@"name"];
+    cell.orderItemObject = orderItem;
     
     return cell;
 }
 
-
-
-
-- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
-    // This stops the button automatically logging out the user, without checking confirmation.
-    if ([identifier isEqualToString:@"logoutUserSegue"]) {
-        return NO;
-    }
-    return YES;
-}
 
 #pragma mark - Parse
 
@@ -151,14 +186,27 @@
 }
 
 
-/*
 #pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
+    // This stops the button automatically logging in the user, without checking credentials.
+    if ([identifier isEqualToString:@"logoutUserSegue"]) {
+        return NO;
+    } else if ([identifier isEqualToString:@"acceptItemSegue"]) {
+        return NO;
+    }
+    return YES;
 }
-*/
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([[segue identifier] isEqualToString:@"acceptItemSegue"]) {
+        UIImage *currentBackground = [self makeTranslucent:[self convertViewToImage:self.view]];
+        
+        PFObject *orderItem = (PFObject *)sender;
+        
+        [[segue destinationViewController] setTranslucentBackground:currentBackground];
+        [[segue destinationViewController] setOrderItem:orderItem];
+    }
+}
 
 @end
