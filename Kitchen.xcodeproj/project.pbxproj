@@ -11,6 +11,7 @@
 		FC0456E919E7FDFC003002D3 /* TableOrderItemTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FC0456E819E7FDFC003002D3 /* TableOrderItemTableViewCell.m */; };
 		FC3F520619E59622005633E0 /* NewOrderItemTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FC3F520519E59622005633E0 /* NewOrderItemTableViewCell.m */; };
 		FC8F5C3419E6B491005965AA /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = FC8F5C3319E6B491005965AA /* UIImage+ImageEffects.m */; };
+		FCB7E2E419EC04880066BB97 /* ExistingOrderTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FCB7E2E319EC04880066BB97 /* ExistingOrderTableViewCell.m */; };
 		FCCF92E519DC53C600C2F3F2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FCCF92E419DC53C600C2F3F2 /* main.m */; };
 		FCCF92E819DC53C600C2F3F2 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FCCF92E719DC53C600C2F3F2 /* AppDelegate.m */; };
 		FCCF92EE19DC53C600C2F3F2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FCCF92EC19DC53C600C2F3F2 /* Main.storyboard */; };
@@ -52,6 +53,8 @@
 		FC3F520519E59622005633E0 /* NewOrderItemTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NewOrderItemTableViewCell.m; sourceTree = "<group>"; };
 		FC8F5C3219E6B491005965AA /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+ImageEffects.h"; sourceTree = "<group>"; };
 		FC8F5C3319E6B491005965AA /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+ImageEffects.m"; sourceTree = "<group>"; };
+		FCB7E2E219EC04880066BB97 /* ExistingOrderTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExistingOrderTableViewCell.h; sourceTree = "<group>"; };
+		FCB7E2E319EC04880066BB97 /* ExistingOrderTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExistingOrderTableViewCell.m; sourceTree = "<group>"; };
 		FCCF92DF19DC53C600C2F3F2 /* Kitchen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kitchen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FCCF92E319DC53C600C2F3F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FCCF92E419DC53C600C2F3F2 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -237,6 +240,8 @@
 				FCF399EB19E58C36006B27E1 /* OrderItemManagerViewController.m */,
 				FC3F520419E59622005633E0 /* NewOrderItemTableViewCell.h */,
 				FC3F520519E59622005633E0 /* NewOrderItemTableViewCell.m */,
+				FCB7E2E219EC04880066BB97 /* ExistingOrderTableViewCell.h */,
+				FCB7E2E319EC04880066BB97 /* ExistingOrderTableViewCell.m */,
 				FC0456EA19E7FE06003002D3 /* Accept Item */,
 			);
 			name = Orders;
@@ -347,6 +352,7 @@
 				FC0456E919E7FDFC003002D3 /* TableOrderItemTableViewCell.m in Sources */,
 				FC8F5C3419E6B491005965AA /* UIImage+ImageEffects.m in Sources */,
 				FC0456E619E7F282003002D3 /* AcceptItemViewController.m in Sources */,
+				FCB7E2E419EC04880066BB97 /* ExistingOrderTableViewCell.m in Sources */,
 				FCED176A19E41CBF002C689D /* UIColor+ApplicationColours.m in Sources */,
 				FCCF92E519DC53C600C2F3F2 /* main.m in Sources */,
 				FCF399EC19E58C36006B27E1 /* OrderItemManagerViewController.m in Sources */,

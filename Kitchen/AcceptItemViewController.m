@@ -28,6 +28,9 @@
 @property (weak, nonatomic) IBOutlet UILabel *courseNameLabel;
 @property (weak, nonatomic) IBOutlet UILabel *orderedXMinsAgoLabel;
 
+@property (weak, nonatomic) IBOutlet UISlider *timeSlider;
+@property (weak, nonatomic) IBOutlet UIButton *variableMinuteButton;
+
 @property (strong, nonatomic) PFObject *orderObject;
 
 @property (strong, nonatomic) NSArray *otherOrderItems;
@@ -55,7 +58,7 @@
     [tableOrdersTableView setBackgroundColor:[UIColor clearColor]];
     
     // Set dish name, and option if applicable.
-    _dishNameLabel.attributedText = [self dishNameForObject:_orderItem];
+    [_dishNameLabel setAttributedText:[self dishNameForObject:_orderItem]];
     
     // Set the other label.
     _dishQuantityLabel.text = [NSString stringWithFormat:@"%@ x", _orderItem[@"quantity"]];
@@ -74,8 +77,7 @@
         
         // Set basic attributations.
         NSMutableAttributedString *dishNameWithOption = [[NSMutableAttributedString alloc] initWithString:concatenatedString];
-        
-        [dishNameWithOption addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"HelveticaNeue-Thin" size:40.0f] range:NSMakeRange(0, [dishNameWithOption length])];
+        [dishNameWithOption addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"HelveticaNeue-Thin" size:40] range:NSMakeRange(0, [dishNameWithOption length])];
         
         // Set the option name to blue.
         [dishNameWithOption addAttribute:NSForegroundColorAttributeName value:[UIColor kitchenBlueColour] range:NSMakeRange(0, [[[optionKeyValuePair allKeys] firstObject] length])];
@@ -86,7 +88,7 @@
         
         // Store the dish name in an attribtued string.
         NSMutableAttributedString *dishName = [[NSMutableAttributedString alloc] initWithString:[orderItem valueForKey:@"name"]];
-        [dishName addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"HelveticaNeue-Thin" size:40.0f] range:NSMakeRange(0, [dishName length])];
+        [dishName addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"HelveticaNeue-Thin" size:40] range:NSMakeRange(0, [dishName length])];
         
         return dishName;
     }
@@ -108,41 +110,41 @@
 #pragma mark - Button handling
 
 - (IBAction)didTouchFiveButton:(id)sender {
-    [self setOrderItemEstimate:nil];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self setOrderItemEstimate:5];
 }
 
-- (IBAction)didTouchTenButton:(id)sender {
-    [self setOrderItemEstimate:nil];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+- (IBAction)didTouchTenButton:(id)sender {    
+    [self setOrderItemEstimate:10];
 }
 
 - (IBAction)didTouchFifteenButton:(id)sender {
-    [self setOrderItemEstimate:nil];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self setOrderItemEstimate:15];
 }
 
 - (IBAction)didTouchTwentyButton:(id)sender {
-    [self setOrderItemEstimate:nil];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self setOrderItemEstimate:20];
 }
 
 - (IBAction)didTouchTwentyFiveButton:(id)sender {
-    [self setOrderItemEstimate:nil];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self setOrderItemEstimate:25];
 }
 
 - (IBAction)didTouchThirtyButton:(id)sender {
-    [self setOrderItemEstimate:nil];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self setOrderItemEstimate:30];
 }
 
+- (IBAction)didChangeSliderValue:(id)sender {
+    // Force the slider to have an integer value.
+    NSInteger sliderValue = lroundf([_timeSlider value]);
+    [_timeSlider setValue:sliderValue animated:YES];
+    
+    // Update the button text.
+    [_variableMinuteButton setTitle:[NSString stringWithFormat:@"%ld", (long)sliderValue] forState:UIControlStateNormal];
+}
+
+- (IBAction)didTouchVariableTimeButton:(id)sender {
+    [self setOrderItemEstimate:[[[_variableMinuteButton titleLabel] text] intValue]];
+}
 
 #pragma mark - Table view
 
@@ -156,6 +158,13 @@
     PFObject *orderItem = [_otherOrderItems objectAtIndex:[indexPath row]];
     
     cell.dishNameLabel.text = orderItem[@"name"];
+    
+    NSDate *currentDate = [NSDate date];
+    NSDate *completionDate = (NSDate *)orderItem[@"estimatedCompletionTime"];
+    NSTimeInterval secondsBetween = [completionDate timeIntervalSinceDate:currentDate];
+    int numberOfMinutes = secondsBetween / 60;
+    
+    cell.dishTimeRemainingLabel.text = [NSString stringWithFormat:@"%d", numberOfMinutes];
     
     return cell;
 }
@@ -185,14 +194,27 @@
             if (!error) {
                 _otherOrderItems = [[NSArray alloc] initWithArray:orderItems];
                 
+                
+                
                 [tableOrdersTableView reloadData];
             }
         }];
     }];
 }
 
-- (void)setOrderItemEstimate:(NSDate *)completionTime {
+- (void)setOrderItemEstimate:(NSInteger)time {
+    // Add the inputted time value to the current date.
+    NSDate *currentDate = [NSDate date];
+    NSDate *datePlusTime = [currentDate dateByAddingTimeInterval:(60*time)];
     
+    _orderItem[@"estimatedCompletionTime"] = datePlusTime;
+    _orderItem[@"state"] = @"accepted";
+    
+    [_orderItem saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"setEstimate" object:nil];
+        
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }];
 }
 
 

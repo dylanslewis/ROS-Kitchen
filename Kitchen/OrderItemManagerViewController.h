@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 
 @interface OrderItemManagerViewController : UIViewController <UITableViewDataSource, UITableViewDelegate> {
-    
     __weak IBOutlet UITableView *newOrdersTable;
     __weak IBOutlet UITableView *existingOrdersTable;
 }
