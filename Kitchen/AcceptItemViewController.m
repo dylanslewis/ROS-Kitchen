@@ -77,7 +77,7 @@
         
         // Set basic attributations.
         NSMutableAttributedString *dishNameWithOption = [[NSMutableAttributedString alloc] initWithString:concatenatedString];
-        [dishNameWithOption addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"HelveticaNeue-Thin" size:40] range:NSMakeRange(0, [dishNameWithOption length])];
+        [dishNameWithOption addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"HelveticaNeue-Thin" size:40] range:NSMakeRange(0, [concatenatedString length])];
         
         // Set the option name to blue.
         [dishNameWithOption addAttribute:NSForegroundColorAttributeName value:[UIColor kitchenBlueColour] range:NSMakeRange(0, [[[optionKeyValuePair allKeys] firstObject] length])];
@@ -194,8 +194,6 @@
             if (!error) {
                 _otherOrderItems = [[NSArray alloc] initWithArray:orderItems];
                 
-                
-                
                 [tableOrdersTableView reloadData];
             }
         }];
@@ -214,9 +212,62 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:@"setEstimate" object:nil];
         
         [self dismissViewControllerAnimated:YES completion:nil];
+        
     }];
+    
+    // Update the order state.
+    PFObject *order = _orderItem[@"forOrder"];
+    [self setOrderStateForOrder:order];
 }
 
+- (void)setOrderStateForOrder:(PFObject *)order {
+    // Get all the items belonging to this order.
+    PFQuery *getOrderItems = [PFQuery queryWithClassName:@"OrderItem"];
+    [getOrderItems whereKey:@"forOrder" equalTo:order];
+    [getOrderItems findObjectsInBackgroundWithBlock:^(NSArray *orderItems, NSError *error) {
+        if (!error) {
+            NSInteger noOfItems=0;
+            NSInteger noOfCollectedItems=0;
+            NSInteger noOfAcceptedItems=0;
+            NSInteger noOfRejectedItems=0;
+            NSInteger noOfReadyItems=0;
+            
+            // Go through each of the order items and update the count variables.
+            for (PFObject *orderItem in orderItems) {
+                noOfItems++;
+                if ([orderItem[@"state"] isEqualToString:@"collected"]) {
+                    noOfCollectedItems++;
+                } else if ([orderItem[@"state"] isEqualToString:@"accepted"]) {
+                    noOfAcceptedItems++;
+                } else if ([orderItem[@"state"] isEqualToString:@"rejected"]) {
+                    noOfRejectedItems++;
+                } else if ([orderItem[@"state"] isEqualToString:@"ready"]) {
+                    noOfReadyItems++;
+                }
+            }
+            
+            NSString *state;
+            
+            // Go through each of the variables, and try and assign the most dominant item state to the whole order.
+            if (noOfReadyItems>0) {
+                state = @"readyToCollect";
+            } else if (noOfRejectedItems>0) {
+                state = @"itemRejected";
+            } else if (noOfAcceptedItems>0) {
+                state = @"estimatesSet";
+            } else if (noOfCollectedItems>0) {
+                state = @"itemsCollected";
+            } else if (noOfItems>0) {
+                state = @"itemsOrdered";
+            } else {
+                state = @"new";
+            }
+            
+            order[@"state"] = state;
+            [order saveInBackground];
+        }
+    }];
+}
 
 /*
 #pragma mark - Navigation

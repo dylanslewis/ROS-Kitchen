@@ -32,6 +32,7 @@
     
     [self getParseData];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getParseData) name:@"newItems" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(getParseData) name:@"setEstimate" object:nil];
 }
 
@@ -58,6 +59,13 @@
     PFObject *orderItem = [touchedCell orderItemObject];
     
     [self performSegueWithIdentifier:@"acceptItemSegue" sender:orderItem];
+}
+
+- (IBAction)didTouchLogoutButton:(id)sender {
+    // Logout the current user and return to the login screen.
+    [PFUser logOut];
+    
+    [self performSegueWithIdentifier:@"logoutUserSegue" sender:nil];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -91,9 +99,82 @@
     orderItem[@"state"] = @"ready";
     [orderItem saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         [self getParseData];
+        
+    
     }];
+    
+    // Update the order state.
+    PFObject *order = orderItem[@"forOrder"];
+    [self setOrderStateForOrder:order];
+    
+    // Get the table number of the completed order item.
+    NSString *tableNumberString = [NSString stringWithFormat:@"table%@", orderItem[@"tableNumber"]];
+    
+    // Get the relevant order id
+    NSString *orderID = order.objectId;
+    
+    // Create the message to send.
+    NSString *notificationMessage = [NSString stringWithFormat:@"%@ x %@ is now ready for Table %@", orderItem[@"quantity"], orderItem[@"name"], orderItem[@"tableNumber"]];
+    
+    // Send a notification which increments the badge, and sends the orderID as an object.
+    PFPush *push = [[PFPush alloc] init];
+    NSDictionary *data = [NSDictionary dictionaryWithObjectsAndKeys:
+                          notificationMessage, @"alert",
+	                          orderID, @"oID",
+                          nil];
+    [push setChannels:@[tableNumberString]];
+    [push setData:data];
+    [push sendPushInBackground];
 }
 
+- (void)setOrderStateForOrder:(PFObject *)order {
+    // Get all the items belonging to this order.
+    PFQuery *getOrderItems = [PFQuery queryWithClassName:@"OrderItem"];
+    [getOrderItems whereKey:@"forOrder" equalTo:order];
+    [getOrderItems findObjectsInBackgroundWithBlock:^(NSArray *orderItems, NSError *error) {
+        if (!error) {
+            NSInteger noOfItems=0;
+            NSInteger noOfCollectedItems=0;
+            NSInteger noOfAcceptedItems=0;
+            NSInteger noOfRejectedItems=0;
+            NSInteger noOfReadyItems=0;
+            
+            // Go through each of the order items and update the count variables.
+            for (PFObject *orderItem in orderItems) {
+                noOfItems++;
+                if ([orderItem[@"state"] isEqualToString:@"collected"]) {
+                    noOfCollectedItems++;
+                } else if ([orderItem[@"state"] isEqualToString:@"accepted"]) {
+                    noOfAcceptedItems++;
+                } else if ([orderItem[@"state"] isEqualToString:@"rejected"]) {
+                    noOfRejectedItems++;
+                } else if ([orderItem[@"state"] isEqualToString:@"ready"]) {
+                    noOfReadyItems++;
+                }
+            }
+            
+            NSString *state;
+            
+            // Go through each of the variables, and try and assign the most dominant item state to the whole order.
+            if (noOfReadyItems>0) {
+                state = @"readyToCollect";
+            } else if (noOfRejectedItems>0) {
+                state = @"itemRejected";
+            } else if (noOfAcceptedItems>0) {
+                state = @"estimatesSet";
+            } else if (noOfCollectedItems>0) {
+                state = @"itemsCollected";
+            } else if (noOfItems>0) {
+                state = @"itemsOrdered";
+            } else {
+                state = @"new";
+            }
+            
+            order[@"state"] = state;
+            [order saveInBackground];
+        }
+    }];
+}
 
 #pragma mark - Translucency effects
 
